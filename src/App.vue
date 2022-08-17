@@ -1,29 +1,47 @@
 <script setup>
-import { ref, computed } from "vue";
-
-// give each todo a unique id
-let id = 0;
+import { ref, computed, onMounted } from "vue";
 
 const newTodo = ref("");
 const hideCompleted = ref(false);
-const todos = ref([
-  { id: id++, text: "Aprender HTML", done: true },
-  { id: id++, text: "Aprender JavaScript", done: true },
-  { id: id++, text: "Aprender Vue", done: false },
-]);
+const todos = ref([]);
 
 const filteredTodos = computed(() => {
-  return hideCompleted.value ? todos.value.filter((t) => !t.done) : todos.value;
+  return hideCompleted.value ? todos.value.filter((t) => !t.completed) : todos.value;
 });
 
-function addTodo() {
-  todos.value.push({ id: id++, text: newTodo.value });
+async function addTodo() {
+  const todo = { id: todos.value.length + 1, title: newTodo.value };
+  const res = await fetch(
+    `https://jsonplaceholder.typicode.com/todos`,
+    { method: 'POST', body: JSON.stringify(todo) }
+  )
+  await res.json()
+
+  todos.value.push(todo);
   newTodo.value = "";
 }
 
-function removeTodo(todo) {
+async function removeTodo(todo) {
+  const res = await fetch(
+    `https://jsonplaceholder.typicode.com/todos/${todo.id}`,
+    { method: 'DELETE' }
+  )
+  await res.json()
+
   todos.value = todos.value.filter((t) => t !== todo);
 }
+
+async function fetchTodos() {
+  todos.value = [];
+  const res = await fetch(
+    `https://jsonplaceholder.typicode.com/todos`
+  )
+  todos.value = await res.json()
+}
+
+onMounted(() => {
+  fetchTodos()
+})
 </script>
 
 <template>
@@ -34,8 +52,8 @@ function removeTodo(todo) {
   </form>
   <ul>
     <li v-for="todo in filteredTodos" :key="todo.id">
-      <input type="checkbox" v-model="todo.done" />
-      <span :class="{ done: todo.done }">{{ todo.text }}</span>
+      <input type="checkbox" v-model="todo.completed" />
+      <span :class="{ done: todo.completed }">{{ todo.title }}</span>
       <button @click="removeTodo(todo)">X</button>
     </li>
   </ul>
