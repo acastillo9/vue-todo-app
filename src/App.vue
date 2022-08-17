@@ -1,9 +1,11 @@
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
 
 const newTodo = ref("");
 const hideCompleted = ref(false);
 const todos = ref([]);
+const selectedTodoId = ref(1)
+const selectedTodoData = ref(null)
 
 const filteredTodos = computed(() => {
   return hideCompleted.value ? todos.value.filter((t) => !t.completed) : todos.value;
@@ -39,6 +41,20 @@ async function fetchTodos() {
   todos.value = await res.json()
 }
 
+function selectTodo(todoId) {
+  selectedTodoId.value = todoId
+}
+
+async function fetchTodoData() {
+  selectedTodoData.value = null
+  const res = await fetch(
+    `https://jsonplaceholder.typicode.com/todos/${selectedTodoId.value}`
+  )
+  selectedTodoData.value = await res.json()
+}
+
+watch(selectedTodoId, fetchTodoData)
+
 onMounted(() => {
   fetchTodos()
 })
@@ -50,10 +66,11 @@ onMounted(() => {
     <input v-model="newTodo" />
     <button>Add Todo</button>
   </form>
+  <p>{{ selectedTodoData }}</p>
   <ul>
     <li v-for="todo in filteredTodos" :key="todo.id">
       <input type="checkbox" v-model="todo.completed" />
-      <span :class="{ done: todo.completed }">{{ todo.title }}</span>
+      <span :class="['cursor-pointer', { done: todo.completed }]" @click="selectTodo(todo.id)">{{ todo.title }}</span>
       <button @click="removeTodo(todo)">X</button>
     </li>
   </ul>
@@ -65,5 +82,8 @@ onMounted(() => {
 <style>
 .done {
   text-decoration: line-through;
+}
+.cursor-pointer {
+  cursor: pointer;
 }
 </style>
