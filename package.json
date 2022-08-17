@@ -1,5 +1,5 @@
 {
-  "name": "vue-todo-app-computed-property",
+  "name": "vue-todo-app-fetching",
   "version": "0.0.0",
   "scripts": {
     "dev": "vite",
