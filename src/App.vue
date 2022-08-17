@@ -1,15 +1,22 @@
 <script setup>
-import { ref } from "vue";
+import { ref, computed } from "vue";
 
 // give each todo a unique id
 let id = 0;
 
 const newTodo = ref("");
+const hideCompleted = ref(false)
 const todos = ref([
-  { id: id++, text: "Aprender HTML" },
-  { id: id++, text: "Aprender JavaScript" },
-  { id: id++, text: "Aprender Vue" },
+  { id: id++, text: "Aprender HTML", done: true },
+  { id: id++, text: "Aprender JavaScript", done: true },
+  { id: id++, text: "Aprender Vue", done: false },
 ]);
+
+const filteredTodos = computed(() => {
+  return hideCompleted.value
+    ? todos.value.filter((t) => !t.done)
+    : todos.value
+})
 
 function addTodo() {
   todos.value.push({ id: id++, text: newTodo.value });
@@ -22,15 +29,24 @@ function removeTodo(todo) {
 </script>
 
 <template>
-  <h1>ToDo App</h1>
   <form @submit.prevent="addTodo">
     <input v-model="newTodo" />
     <button>Add Todo</button>
   </form>
   <ul>
-    <li v-for="todo in todos" :key="todo.id">
-      {{ todo.text }}
+    <li v-for="todo in filteredTodos" :key="todo.id">
+      <input type="checkbox" v-model="todo.done">
+      <span :class="{ done: todo.done }">{{ todo.text }}</span>
       <button @click="removeTodo(todo)">X</button>
     </li>
   </ul>
+  <button @click="hideCompleted = !hideCompleted">
+    {{ hideCompleted ? 'Show all' : 'Hide completed' }}
+  </button>
 </template>
+
+<style>
+.done {
+  text-decoration: line-through;
+}
+</style>
