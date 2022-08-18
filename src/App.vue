@@ -1,5 +1,6 @@
 <script setup>
 import { ref, computed, onMounted, watch } from "vue";
+import ToDo from './components/ToDo.vue';
 
 const newTodo = ref("");
 const hideCompleted = ref(false);
@@ -69,13 +70,7 @@ onMounted(() => {
   <p>{{ selectedTodoData }}</p>
   <ul>
     <li v-for="todo in filteredTodos" :key="todo.id">
-      <input type="checkbox" v-model="todo.completed" />
-      <span
-        :class="['cursor-pointer', { done: todo.completed }]"
-        @click="selectTodo(todo.id)"
-        >{{ todo.title }}</span
-      >
-      <button @click="removeTodo(todo)">X</button>
+      <ToDo :todo="todo" @selected="(todoId) => selectTodo(todoId)" @deleted="(todo) => removeTodo(todo)" />
     </li>
   </ul>
   <button @click="hideCompleted = !hideCompleted">
